@@ -56,7 +56,7 @@ def execute_command(command_name, arguments):
     memory = PineconeMemory()
     try:
         if command_name == "google":
-            
+
             # Check if the Google API key is set and use the official search method
             # If the API key is not set or has only whitespaces, use the unofficial search method
             if cfg.google_api_key and (cfg.google_api_key.strip() if cfg.google_api_key else None):
@@ -109,9 +109,8 @@ def execute_command(command_name, arguments):
             shutdown()
         else:
             return f"Unknown command {command_name}"
-    # All errors, return "Error: + error message"
     except Exception as e:
-        return "Error: " + str(e)
+        return f"Error: {str(e)}"
 
 
 def get_datetime():
@@ -120,10 +119,7 @@ def get_datetime():
 
 
 def google_search(query, num_results=8):
-    search_results = []
-    for j in ddg(query, max_results=num_results):
-        search_results.append(j)
-
+    search_results = list(ddg(query, max_results=num_results))
     return json.dumps(search_results, ensure_ascii=False, indent=4)
 
 def google_official_search(query, num_results=8):
@@ -169,20 +165,17 @@ def browse_website(url, question):
     if len(links) > 5:
         links = links[:5]
 
-    result = f"""Website Content Summary: {summary}\n\nLinks: {links}"""
-
-    return result
+    return f"""Website Content Summary: {summary}\n\nLinks: {links}"""
 
 
 def get_text_summary(url, question):
     text = browse.scrape_text(url)
     summary = browse.summarize_text(text, question)
-    return """ "Result" : """ + summary
+    return f""" "Result" : {summary}"""
 
 
 def get_hyperlinks(url):
-    link_list = browse.scrape_links(url)
-    return link_list
+    return browse.scrape_links(url)
 
 
 def commit_memory(string):
@@ -193,7 +186,7 @@ def commit_memory(string):
 
 def delete_memory(key):
     if key >= 0 and key < len(mem.permanent_memory):
-        _text = "Deleting memory with key " + str(key)
+        _text = f"Deleting memory with key {str(key)}"
         del mem.permanent_memory[key]
         print(_text)
         return _text
@@ -208,7 +201,7 @@ def overwrite_memory(key, string):
         key_int = int(key)
         # Check if the integer key is within the range of the permanent_memory list
         if 0 <= key_int < len(mem.permanent_memory):
-            _text = "Overwriting memory with key " + str(key) + " and string " + string
+            _text = f"Overwriting memory with key {str(key)} and string {string}"
             # Overwrite the memory slot with the given integer key and string
             mem.permanent_memory[key_int] = string
             print(_text)
@@ -216,9 +209,8 @@ def overwrite_memory(key, string):
         else:
             print(f"Invalid key '{key}', out of range.")
             return None
-    # Check if the key is a valid string
     elif isinstance(key, str):
-        _text = "Overwriting memory with key " + key + " and string " + string
+        _text = f"Overwriting memory with key {key} and string {string}"
         # Overwrite the memory slot with the given string key and string
         mem.permanent_memory[key] = string
         print(_text)
@@ -280,6 +272,4 @@ def list_agents():
 
 def delete_agent(key):
     result = agents.delete_agent(key)
-    if not result:
-        return f"Agent {key} does not exist."
-    return f"Agent {key} deleted."
+    return f"Agent {key} deleted." if result else f"Agent {key} does not exist."
